@@ -1,0 +1,119 @@
+<html>
+<head>
+<meta charset='utf-8' />
+<title> Dot Decimal Notation IME </title>
+<script src="jquery-1.9.1.min.js"></script>
+<script src='hosts.json'></script>
+</head>
+<body>
+<ul>
+<li> 0.0 ~ 3.111 Latin & IPA </li>
+<li> 3.111 ~ 3.255 Greek & Copotic</li>
+<li> 4.0 ~ 4.255, 5.0 ~ 5.47 Cyrillic </li>
+<li> 5.48 ~ 5.143 Georgian </li>
+<li> 5.144 ~ 5.255 Hebrew </li>
+<li> 6.0 ~ 7.127 Arabic & Syriac </li>
+<li> 7.128 ~ 7.191 Thaana </li>
+<li> 7.192 ~ 7.255 West African </li>
+</ul>
+<input id='code' readOnly></div>
+<textarea id='in' style='width:100%; height: 20%;'>
+</textarea>
+<script>
+var ddn;
+$("#in").bind('keypress', function(event){
+	console.log("event.which: " + event.which)
+	if (event.which >= 48 && event.which <= 57){
+		ddn += event.which - 48;
+		$("#code").val(ddn);
+	}
+	else if (event.which == 46){
+		ddn += '.';
+		$("#code").val(ddn);
+	}
+	else if (event.which >= 87 && event.which <= 122){
+		ddn += String.fromCharCode(event.which);
+		$("#code").val(ddn);
+	}
+	else if (event.which == 32) {
+		old = $("#in").val();
+		index = old.lastIndexOf(ddn);
+		if (index != -1 ) {old = old.substring(0, index);}
+		
+		console.log("ddn : " + ddn);
+		chr = convert(ddn);
+		console.log("chr: "+ chr);
+		$("#in").val(old + chr);
+		ddn='';
+		$("#code").val(ddn);
+	}
+	else if (event.which == 13) {
+		ddn = "";
+		$("#code").val(ddn);
+	}
+	else {
+		//ddn = "";
+		//$("#code").val(ddn);
+	}
+
+});
+function convert(input){
+	if (isName(input)) input = hosts[input];
+	if (isDDN(input)){ return ddn2str(input);}
+	else return "";
+}
+function ddn2str(ddn) {
+	var arr=ddn.split('.')
+	var ret=0;
+	for (var i = 0; i != arr.length; ++i) {
+		j = arr.length - i - 1;
+		ret += Number(arr[i]) << (8 * j);
+	}
+	return realFromCharCode(ret);
+}
+
+function realFromCharCode(code){
+	if (code < 0x10000) return String.fromCharCode(code);
+	else {
+		H = Math.floor((code - 0x10000) / 0x400) + 0xD800;
+		L = (code - 0x10000) % 0x400 + 0xDC00;
+		return String.fromCharCode(L, H);
+	}
+}
+function isDDN(str){
+	var arr=str.split('.');
+	if (arr.length > 3 || arr.length < 1) return false;
+	for (var i = 0; i != arr.length; ++i) {
+		if (Number(arr[i]) > 255) return false;
+		for (var j = 0; j != arr[i].length; ++j) {
+			var code = arr[i].charCodeAt(j);
+			if (code < 48 || code > 57) return false;
+		}
+	}
+	return true;
+}
+function isName(str){
+	var arr=str.split('.');
+	if (arr.length < 1) return false;
+	for (var i = 0; i != arr.length; ++i) {
+		for (var j = 0; j != arr[i].length; ++j) {
+			var code = arr[i].charCodeAt(j);
+			if (code < 87 || code > 122) return false;
+		}
+	}
+	return true;
+}
+//console.log(ddn2str('2.2.3'));
+console.log('dd');
+console.log(isDDN('2.3.3')? "true" : "false");
+console.log(isDDN('23.3f.3')? "true" : "false");
+console.log(isDDN('44'));
+
+
+console.log(isName('a.b'));
+console.log(isName('a.b.1a'));
+console.log(isName('A.b'));
+console.log(isName('ab'));
+</script>
+</body>
+</html>
