@@ -108,13 +108,12 @@ function ddn2str(ddn) {
 	}
 	return realFromCharCode(ret);
 }
-
 function realFromCharCode(code){
 	if (code < 0x10000) return String.fromCharCode(code);
 	else {
 		H = Math.floor((code - 0x10000) / 0x400) + 0xD800;
 		L = (code - 0x10000) % 0x400 + 0xDC00;
-		return String.fromCharCode(L, H);
+		return String.fromCharCode(H, L);
 	}
 }
 function isDDN(str){
