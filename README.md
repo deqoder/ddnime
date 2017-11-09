@@ -1,6 +1,6 @@
 # ddnime
 dot decimal notation IME
-[preview](https://htmlpreview.github.io/?https://github.com/deqoder/ddnime/blob/master/ddnime.html)
+[preview](https://deqoder.github.io/ddnime/ddnime.html)
 
 
 * space: convert code to charater
