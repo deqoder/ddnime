@@ -42,7 +42,7 @@
 	</ul></li>
 </ul>
 <h3> Plane 1: Supplementary Multilingual Plane(SMP)</h3>
-<h3> Plane 2: Supplementary Ideographic Plain(SIP)</h3>
+<h3> Plane 2: Supplementary Ideographic Plane(SIP)</h3>
 <ul>
 	<li><a>2.0.0 ~ 2.166.223</a> CJK-B</li>
 	<li><a>2.167.0 ~ 2.183.63</a> CJK-C</li>
@@ -54,26 +54,18 @@
 
 <div><input id='code' readOnly></div>
 
-<textarea id='in' style='width:100%; height: 20%;'>
+<textarea id='in' style='width:100%; height: 20%; font-family:"Times New Roman"'>
 </textarea>
 <script>
 var ddn = "";
 var flag_minusLast = false;
 $("#in").bind('keypress', function(event){
 	console.log("event.which: " + event.which)
-	if (event.which >= 48 && event.which <= 57){
-		ddn += event.which - 48;
-		$("#code").val(ddn);
-	}
-	else if (event.which == 46){
-		ddn += '.';
-		$("#code").val(ddn);
-	}
-	else if (event.which >= 87 && event.which <= 122){
+	if (event.which > 0x20 && event.which < 0x7f){
 		ddn += String.fromCharCode(event.which);
 		$("#code").val(ddn);
 	}
-	else if (event.which == 32) {
+	else if (ddn != "" && event.which == 0x20) {
 		old = $("#in").val();
 		index = old.lastIndexOf(ddn);
 		if (index != -1 ) {old = old.substring(0, index);}
@@ -87,11 +79,15 @@ $("#in").bind('keypress', function(event){
 		
 		flag_minusLast = true;		
 	}
-	else if (event.which == 13 && ddn != "") {
+	else if (ddn != "" && event.which == 13) {
 		ddn = "";
 		$("#code").val(ddn);
 		
 		flag_minusLast = true;	
+	}
+	else if (ddn != "" && event.which == 8) {
+		ddn = minusLast(ddn);
+		$("#code").val(ddn);
 	}
 	else {
 		//ddn = "";
@@ -109,11 +105,60 @@ function minusLast(str)
 {
 	return str.substring(0, str.length - 1);
 }
-function convert(input){
-	if (isName(input)) input = hosts[input];
-	if (isDDN(input)){ return ddn2str(input);}
-	else return "";
+
+function recursive_dns(domain, server){
+	var index = domain.lastIndexOf('.');
+	if (index == -1){
+		if (server.hasOwnProperty(domain)) {
+			if (typeof server[domain] == "string"){
+				return server[domain];
+			}
+			else return server[domain]["__root__"];
+		}
+		else if (server["__size__"] > 0){
+			var ret = "";
+			var sz = server["__size__"];
+			var count = 0;
+			for (var i = 0; i != domain.length / sz; ++i){
+				var ddomain = domain.substring(i * sz , (i + 1) * sz);
+				if (server.hasOwnProperty(ddomain) && typeof server[ddomain] == "string"){
+					if (count != 0) ret += ",";
+					ret += server[ddomain];
+					++count;
+				}
+			}
+			return ret;
+		}
+		else return "";
+	} else {
+		var last = domain.substring(index + 1);
+		var left = domain.substring(0, index);
+		if (server.hasOwnProperty(last) && typeof server[last] != "string"){
+			return recursive_dns(left, server[last]);
+		}
+		else return "";
+		
+	}
 }
+function dns(domain){
+	return recursive_dns(domain, root);
+}
+console.log("recur dns test: " + dns("fq.zh"));
+console.log("recur dns test: " + dns("zhu.fq.zh"));
+
+function convert(input){
+	if (isName(input)){
+		 input = dns(input);
+	}
+	var arr = input.split(',');
+	var ret = "";
+	for (var i = 0; i != arr.length; ++i){
+		if (isDDN(arr[i])){  ret += ddn2str(arr[i]);}
+	}
+	return ret;
+}
+
+console.log("convert: " + convert("1.1,1.2"));
 function ddn2str(ddn) {
 	var arr=ddn.split('.')
 	var ret=0;
@@ -132,6 +177,7 @@ function realFromCharCode(code){
 	}
 }
 function isDDN(str){
+	if (str == "") return false;
 	var arr=str.split('.');
 	if (arr.length > 3 || arr.length < 1) return false;
 	for (var i = 0; i != arr.length; ++i) {
@@ -144,19 +190,21 @@ function isDDN(str){
 	return true;
 }
 function isName(str){
+	if (str == "") return false;
 	var arr=str.split('.');
 	if (arr.length < 1) return false;
 	for (var i = 0; i != arr.length; ++i) {
 		for (var j = 0; j != arr[i].length; ++j) {
 			var code = arr[i].charCodeAt(j);
-			if (code < 87 || code > 122) return false;
+			if (code >= 97 && code <= 122 
+			|| code >= 65 && code <= 90 || code == 45) continue;
+			else return false;
 		}
 	}
 	return true;
 }
 
 //console.log(ddn2str('2.2.3'));
-console.log('dd');
 console.log(isDDN('2.3.3')? "true" : "false");
 console.log(isDDN('23.3f.3')? "true" : "false");
 console.log(isDDN('44'));
