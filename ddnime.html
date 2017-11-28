@@ -6,56 +6,9 @@
 <script src='hosts.json'></script>
 </head>
 <body>
-<div id='plane' style="width:65%; height: 70%; display:inline-block; overflow:auto;"></div>
-<div style="width:30%; height: 70%; overflow:auto;display:inline-block">
-<h3> Plane 0: Basic Multilingual Plane(BMP)</h3>
-<ul>
-	<li><ul><a>0.0 ~ 31.255</a> Scripts
-		<li><ul> <a>0.0 ~ 5.143</a>West Script
-			<li> <a>0.0 ~ 3.111</a> Latin & IPA </li>
-			<li> <a>3.111 ~ 3.255</a> Greek & Copotic</li>
-			<li> <a>4.0 ~ 4.255</a>, <a>5.0 ~ 5.47</a> Cyrillic </li>
-			<li> <a>5.48 ~ 5.143</a> Armenian </li>
-		</ul></li>
-		<li><ul><a>5.144 ~ 8.255</a> Middle East Scripts
-			<li> <a>5.144 ~ 5.255</a> Hebrew </li>
-			<li> <a>6.0 ~ 7.127</a> Arabic & Syriac </li>
-			<li> <a>7.128 ~ 7.191</a> Thaana(Maldive) </li>
-			<li> <a>7.192 ~ 7.255</a> Nko(West African) </li>
-		</ul></li>
-		<li><ul><a>9.0 ~ 16.159</a> Indic Scripts
-		</ul></li>
-		<li><ul><a>16.160 ~ 27.127</a> other Scripts
-		</ul></li>
-		<li><ul><a>29.0 ~ 31.255</a> Script Extensions
-		</ul></li>
-	</ul></li>
-	<li><ul><a id='default'>32.0 ~ 43.255</a> Symbols
-	</ul></li>
-	<li><ul><a>44.0 ~ 46.127</a> supp
-	</ul></li>
-	<li><ul><a>46.128 ~ 159.255</a> CJK
-		<li><a>52.0 ~ 77.191</a> CJK-A</li>
-		<li><a>78.0 ~ 159.255</a> CJK-0</li>
-	</ul></li>
-	<li><ul><a>160.0 ~ 255.255</a> other
-	</ul></li>
-</ul>
-<h3> Plane 1: Supplementary Multilingual Plane(SMP)</h3>
-<h3> Plane 2: Supplementary Ideographic Plane(SIP)</h3>
-<ul>
-	<li><a>2.0.0 ~ 2.166.223</a> CJK-B</li>
-	<li><a>2.167.0 ~ 2.183.63</a> CJK-C</li>
-	<li><a>2.183.64 ~ 2.184.31</a> CJK-D</li>	
-	<li><a>2.184.32 ~ 2.206.175</a> CJK-E</li>
-	<li><a>2.206.176 ~ 2.235.239</a> CJK-F</li>
-</li>
-</div>
-
+<iframe style="width:100%; height: 70%; display:inline-block;">src='charbrowser.html'></iframe>
 <div><input id='code' readOnly></div>
-
-<textarea id='in' style='width:100%; height: 20%; font-family:"Times New Roman"'>
-</textarea>
+<textarea id='in' style='width:100%; height: 20%; font-family:"Times New Roman"'></textarea>
 <script>
 var ddn = "";
 var flag_minusLast = false;
@@ -214,55 +167,6 @@ console.log(isName('a.b'));
 console.log(isName('a.b.1a'));
 console.log(isName('A.b'));
 console.log(isName('ab'));
-</script>
-<script>
-function writetable(plain, block_b, block_e, spot_b, spot_e)
-{
-	var ret="<table border='1' cellSpacing='0'>"
-	for (var i = -1; i != 256; ++i)
-	{
-		if (i == -1) ret += "<thead>";
-		ret += "<tr>";	
-		for (var j = -1; j != block_e - block_b + 1; ++j)
-		{
-			if (i == -1 || j == -1) ret += "<th>";
-			else ret += "<td>";
-			if (i == -1 && j == -1) ret += "s\\b";
-			else if (i == -1 && j != -1) ret += j + block_b;
-			else if (j == -1 && i != -1) ret += i;
-			else if (j == 0 && i < spot_b 
-				|| j == block_e - block_b && i > spot_e) ret += "";
-			else ret += "&#" + String(i + (j + block_b) * 256 + plain * 65536) + ";"
-			if (i == -1 || j == -1) ret += "</th>";
-			else ret += "</td>"
-		}
-		ret += "</tr>";
-		if (i == -1) ret += "</thead>";
-	}
-	ret +="</table>";
-	return ret;
-}
-$("li a").click(function(){
-	arr = $(this).text().split(' ~ ');
-	if (arr.length != 2) return;
-	begin = arr[0].split('.');
-	end = arr[1].split('.');
-	if (begin.length == 2 && end.length == 2)
-	{
-		$("#plane").html(writetable(0, Number(begin[0]), Number(end[0]), Number(begin[1]), Number(end[1])));
-	}
-	if (begin.length == 3 && end.length == 3 && begin[0] == end[0]){
-		$("#plane").html(writetable(Number(begin[0]), Number(begin[1]), Number(end[1]), Number(begin[2]), Number(end[2])));
-	}
-	//https://stackoverflow.com/questions/673153/html-table-with-fixed-headers
-	document.getElementById("plane").addEventListener("scroll", function(){	      		
-			var translate = "translate(0,"+this.scrollTop+"px)";
-   			this.querySelector("thead").style.transform = translate;
-	});
-	$("th").css("background-color", "#aaa");
-});
-$("li a").attr("href", "javascript:void(0)");
-$("#default").click();
 </script>
 </body>
 </html>
